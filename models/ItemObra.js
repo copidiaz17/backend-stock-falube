@@ -1,4 +1,3 @@
-// models/ItemObra.js
 import { sequelize, DataTypes } from "../database.js";
 
 const ItemObra = sequelize.define(
@@ -9,28 +8,27 @@ const ItemObra = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-
     obraId: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-
     nombre: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-
     codigo: {
       type: DataTypes.STRING,
       allowNull: true,
     },
   },
   {
-    tableName: "item_obras",
+    tableName: "itemobras", // ✅ NOMBRE REAL DE LA TABLA
+    freezeTableName: true,  // ✅ EVITA pluralización automática
+    timestamps: true,       // o false si no usás createdAt / updatedAt
     indexes: [
       {
         unique: true,
-        fields: ["obraId", "nombre"], // ✅ FK CORRECTA
+        fields: ["obraId", "nombre"],
       },
     ],
   }
