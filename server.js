@@ -5,7 +5,7 @@ import cors from "cors";
 import { sequelize } from "./database.js"; 
 
 import "./models/Usuario.js"; 
-import "./models/Obra.js";
+import "./models/Obra.js";  
 import "./models/Material.js";
 import "./models/MaterialObra.js";
 import "./models/ItemObra.js"; 
@@ -16,7 +16,7 @@ import "./models/associations.js";
 import authRoutes from "./routes/auth.js";
 import obrasRoutes from "./routes/obras.js";
 import materialesRoutes from "./routes/materiales.js";
-import itemsObraRoutes from "./routes/itemsObra.js"; 
+
 
 const app = express();
 
@@ -34,7 +34,7 @@ app.use(cors({
 app.use("/auth", authRoutes);
 app.use("/materiales", materialesRoutes);
 app.use("/obras", obrasRoutes);
-app.use("/items-obra", itemsObraRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Servidor Backend funcionando correctamente");
