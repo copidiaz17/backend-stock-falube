@@ -311,32 +311,6 @@ router.post(
 /* ================================================
    RUTA DE LIMPIEZA TEMPORAL (BORRAR OBRA ID 2)
    ================================================ */
-router.get(
-  "/limpieza/borrar-obra-2",
-  async (req, res) => {
-    try {
-      // 1. Intentamos borrar usando los dos nombres de columna más probables
-      // Sequelize ejecutará un DELETE FROM materialobras WHERE obraid = 2
-      const filasBorradas = await MaterialObra.destroy({
-        where: {
-          [Op.or]: [
-            { obraid: 2 },
-            { ObraId: 2 }
-          ]
-        },
-        // Esto evita errores si hay restricciones de clave foránea
-        force: true 
-      });
 
-      res.json({
-        message: `Limpieza ejecutada. Se eliminaron ${filasBorradas} registros.`,
-        instrucciones: "Si el contador es 0, verifica en tu modelo si la columna es 'obraid' u 'ObraId'."
-      });
-    } catch (error) {
-      console.error("Error al limpiar tabla:", error);
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
 
   export default router;
