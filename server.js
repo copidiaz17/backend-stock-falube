@@ -18,7 +18,7 @@ import obrasRoutes from "./routes/obras.js";
 import materialesRoutes from "./routes/materiales.js";
 import usuariosRoutes from "./routes/usuarios.js";
 
-app.use("/usuarios", usuariosRoutes);
+
 
 
 const app = express();
