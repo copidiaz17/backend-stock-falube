@@ -16,6 +16,9 @@ import "./models/associations.js";
 import authRoutes from "./routes/auth.js";
 import obrasRoutes from "./routes/obras.js";
 import materialesRoutes from "./routes/materiales.js";
+import usuariosRoutes from "./routes/usuarios.js";
+
+app.use("/usuarios", usuariosRoutes);
 
 
 const app = express();
@@ -34,6 +37,7 @@ app.use(cors({
 app.use("/auth", authRoutes);
 app.use("/materiales", materialesRoutes);
 app.use("/obras", obrasRoutes);
+app.use("/usuarios", usuariosRoutes);
 
 
 app.get("/", (req, res) => {

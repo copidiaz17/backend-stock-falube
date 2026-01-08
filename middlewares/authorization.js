@@ -29,7 +29,7 @@ function hasRole(allowedRoles) {
             next(); 
         } else {
             return res.status(403).json({ error: "Permiso denegado. Su rol no tiene autorización para esta acción." });
-        }1
+        }
     };
 }
 
