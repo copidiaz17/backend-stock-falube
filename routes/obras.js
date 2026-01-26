@@ -310,33 +310,7 @@ router.post(
 
 
    
-  /* ================================================
-   ELIMINAR OBRA (DELETE) - SOLO ADMIN
-   ================================================ */
-router.delete(
-  "/:id",
-  authMiddleware,
-  hasRole([ROLES.ADMIN]),
-  async (req, res) => {
-    try {
-      const obra = await Obra.findByPk(req.params.id);
-
-      if (!obra) {
-        return res.status(404).json({ message: "Obra no encontrada" });
-      }
-
-      await obra.destroy();
-
-      res.json({ message: "Obra eliminada correctamente" });
-    } catch (error) {
-      console.error("Error al eliminar obra:", error);
-      res.status(500).json({
-        message: "Error interno al eliminar la obra",
-      });
-    }
-  }
-);
-
+  
 
 
   export default router;
