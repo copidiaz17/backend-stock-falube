@@ -312,6 +312,9 @@ router.post(
 /* ================================================
    ELIMINAR OBRA (DELETE) - SOLO ADMIN
    ================================================ */
+/* ================================================
+   ELIMINAR OBRA (DELETE)
+   ================================================ */
 router.delete(
   "/:id",
   authMiddleware,
@@ -320,25 +323,32 @@ router.delete(
     try {
       const obraId = req.params.id;
 
-      const obra = await Obra.findByPk(obraId);
-      if (!obra) {
+      console.log("🗑 Eliminando obra ID:", obraId);
+
+      // 1️⃣ Eliminar movimientos
+      await MovimientoMaterial.destroy({ where: { obraId } });
+
+      // 2️⃣ Eliminar relación materiales-obra
+      await MaterialObra.destroy({ where: { ObraId: obraId } });
+
+      // 3️⃣ Eliminar ítems de obra
+      await ItemObra.destroy({ where: { obraId } });
+
+      // 4️⃣ Eliminar la obra
+      const eliminadas = await Obra.destroy({ where: { id: obraId } });
+
+      if (!eliminadas) {
         return res.status(404).json({ message: "Obra no encontrada" });
       }
 
-      // 🔥 Limpieza en orden
-      await MovimientoMaterial.destroy({ where: { obraId } });
-      await MaterialObra.destroy({ where: { ObraId: obraId } });
-      await ItemObra.destroy({ where: { obraId } });
-
-      await obra.destroy();
-
       res.json({ message: "Obra eliminada correctamente" });
     } catch (error) {
-      console.error("Error al eliminar obra:", error);
+      console.error("❌ Error eliminando obra:", error);
       res.status(500).json({ message: "Error al eliminar obra" });
     }
   }
 );
+
    
   
 
