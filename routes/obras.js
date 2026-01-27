@@ -309,6 +309,36 @@ router.post(
 );
 
 
+/* ================================================
+   ELIMINAR OBRA (DELETE) - SOLO ADMIN
+   ================================================ */
+router.delete(
+  "/:id",
+  authMiddleware,
+  hasRole([ROLES.ADMIN]),
+  async (req, res) => {
+    try {
+      const obraId = req.params.id;
+
+      const obra = await Obra.findByPk(obraId);
+      if (!obra) {
+        return res.status(404).json({ message: "Obra no encontrada" });
+      }
+
+      // 🔥 Limpieza en orden
+      await MovimientoMaterial.destroy({ where: { obraId } });
+      await MaterialObra.destroy({ where: { ObraId: obraId } });
+      await ItemObra.destroy({ where: { obraId } });
+
+      await obra.destroy();
+
+      res.json({ message: "Obra eliminada correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar obra:", error);
+      res.status(500).json({ message: "Error al eliminar obra" });
+    }
+  }
+);
    
   
 
