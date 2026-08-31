@@ -2,36 +2,49 @@
 import express from "express";
 import cors from "cors";
 
-import { sequelize } from "./database.js"; 
+import { sequelize } from "./database.js";
 
-import "./models/Usuario.js"; 
-import "./models/Obra.js";  
+import "./models/Usuario.js";
+import "./models/Obra.js";
 import "./models/Material.js";
 import "./models/MaterialObra.js";
-import "./models/ItemObra.js"; 
-import "./models/MovimientoMaterial.js"; 
+import "./models/ItemObra.js";
+import "./models/MovimientoMaterial.js";
 
-import "./models/associations.js"; 
+import "./models/associations.js";
 
 import authRoutes from "./routes/auth.js";
 import obrasRoutes from "./routes/obras.js";
 import materialesRoutes from "./routes/materiales.js";
 import usuariosRoutes from "./routes/usuarios.js";
 
-
-
-
 const app = express();
 
-// Render te da dinámicamente el puerto
 const PORT = process.env.PORT || 3000;
+
+// Configurar trust proxy para Render
+app.set("trust proxy", 1);
 
 app.use(express.json());
 
+// CORS para producción y desarrollo
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5175";
+const allowedOrigins = [
+  FRONTEND_URL,
+  "https://frontend-stok-falube.onrender.com",
+  "http://localhost:5175",
+  "http://localhost:5173",
+  "http://localhost:5174"
+];
+
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174", "https://frontend-stok-falube.onrender.com"],
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // health checks sin origin
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error(`CORS bloqueado para origin: ${origin}`));
+  },
+  credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
 }));
 
 app.use("/auth", authRoutes);
@@ -45,15 +58,52 @@ app.get("/", (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  console.error("⛔ ERROR EN EXPRESS:", err);
   res.status(500).send({ message: "Error interno del servidor" });
 });
 
+// Validar variables de entorno
+console.log("🔍 Variables de entorno cargadas:");
+console.log("   NODE_ENV:", process.env.NODE_ENV || "(no definido)");
+console.log("   PORT:", process.env.PORT || "(no definido)");
+console.log("   DB_HOST:", process.env.DB_HOST || "(no definido)");
+console.log("   DB_PORT:", process.env.DB_PORT || "(no definido)");
+console.log("   DB_NAME:", process.env.DB_NAME || "(no definido)");
+console.log("   DB_USER:", process.env.DB_USER || "(no definido)");
+console.log("   DB_SSL:", process.env.DB_SSL ?? "(no definido, se usa SSL)");
+console.log("   DB_PASSWORD:", process.env.DB_PASSWORD ? "✅ definido" : "❌ NO definido");
+console.log("   JWT_SECRET:", process.env.JWT_SECRET ? "✅ definido" : "❌ NO definido");
+console.log("   FRONTEND_URL:", process.env.FRONTEND_URL || "(no definido)");
+
+if (!process.env.JWT_SECRET) {
+  console.error("⛔ JWT_SECRET no está definido.");
+  process.exit(1);
+}
+
+/*
+  El sync() quedó apagado por defecto. Las tablas ya existen en
+  producción, así que correrlo en cada arranque toca el esquema sin
+  necesidad. Si alguna vez hace falta crear tablas nuevas, se levanta
+  una vez con DB_SYNC=true y se vuelve a apagar.
+*/
+const debeSincronizar = String(process.env.DB_SYNC || "false").toLowerCase() === "true";
+
+console.log("🔄 Intentando conectar a la base de datos...");
+
 sequelize.authenticate()
   .then(() => {
-    console.log("Conectado a DB correctamente");
+    console.log("✅ Conexión a DB correcta");
+    if (!debeSincronizar) return null;
+    console.log("⚠️  DB_SYNC=true: sincronizando modelos con la base...");
+    return sequelize.sync();
+  })
+  .then(() => {
+    if (debeSincronizar) console.log("✅ Tablas sincronizadas");
     app.listen(PORT, () => {
-      console.log(`Servidor corriendo en puerto ${PORT}`);
+      console.log(`✅ Servidor corriendo en puerto ${PORT}`);
     });
   })
-  .catch((err) => console.error(err));
+  .catch((err) => {
+    console.error("⛔ Error de conexión DB:", err.message || err);
+    setTimeout(() => process.exit(1), 1000);
+  });
